@@ -2,6 +2,8 @@ from services.commerce_client import CommerceClient
 from graph.state import SupportState
 from openai import AsyncOpenAI
 from schemas.intent import IntentClassification
+from langgraph.types import interrupt
+
 
 class SupportNodes:
     def __init__(self , commerce_client : CommerceClient , llmClient : AsyncOpenAI  ):
@@ -31,8 +33,28 @@ class SupportNodes:
         }
 
     async def request_approval(self , state:SupportState)-> dict:
-        print("placeholderNode")
-        return {}
+        order_id = state["order_id"]
+        decision  = interrupt({
+            "action":"CANCEL_ORDER" , 
+            "order_id":order_id,
+            "message":"Do you approve to cancel this order"
+            }
+        )
+        return {
+            "approval_decision" :decision
+        }
+    
+    async def cancel_order(self , state:SupportState)->dict:
+        order_id = state["order_id"]
+        decsion = state["approval_decision"]
+        if not decsion:
+            raise ValueError("you have to approve cancelation")
+        if order_id is None:
+            raise ValueError("you have to send an order_id")
+        result = await self.commerce_client.cancel_order(order_id)
+        return{
+            "cancellation_result":result
+        }
         
     
     async def classify_intent(self , state:SupportState):

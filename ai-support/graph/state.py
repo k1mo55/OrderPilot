@@ -8,4 +8,5 @@ class SupportState( TypedDict ):
     intent: str | None
     order_id : int | None
     cancellation_eligibility: dict | None
-        
+    approval_decision : bool   | None
+    cancellation_result:dict | None

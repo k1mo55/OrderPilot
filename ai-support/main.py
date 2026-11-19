@@ -9,11 +9,13 @@ from dotenv import load_dotenv
 from services.commerce_client import CommerceClient
 from graph.nodes import SupportNodes
 from graph.workflow import SupportGraph
-
+from langgraph.types import Command
 load_dotenv()
 
 base_url = os.environ["BASE_URL"]
-
+class ApprovalRequest(BaseModel):
+    thread_id: str
+    approved: bool
 
 class ChatRequest(BaseModel):
     customer_id: int
@@ -40,9 +42,36 @@ async def chat(data: ChatRequest, request: Request):
     initial_state = {
         "customer_id": data.customer_id,
         "user_message": data.message,
-        "orders": []
+        "orders": [],
+        "intent": None,
+        "order_id": None,
+        "cancellation_eligibility": None,
+        "approval_decision": None,
+        "cancellation_result": None,
     }
-    
-    result = await request.app.state.graph.ainvoke(initial_state)
+    config = {
+    "configurable": {
+        "thread_id": f"customer-{data.customer_id}"
+    }
+    }
+    result = await request.app.state.graph.ainvoke(
+        initial_state , 
+        config = config
+        )
 
+    return result
+
+
+
+@app.post("/approve")
+async def approve(data: ApprovalRequest, request: Request):
+    config = {
+    "configurable": {
+        "thread_id": f"customer-{data.thread_id}"
+    }
+    }
+    result = await request.app.state.graph.ainvoke(
+    Command(resume=data.approved),
+    config=config
+    )
     return result

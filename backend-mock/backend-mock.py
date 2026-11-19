@@ -116,7 +116,7 @@ def cancel_order(order_id: int) -> dict:
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Order {order_id} cannot be cancelled because it is {order['status']}",
         )
-
+    print("we canceled")
     order["status"] = OrderStatus.CANCELLED.value
     return order
 

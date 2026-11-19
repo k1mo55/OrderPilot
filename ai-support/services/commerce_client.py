@@ -24,3 +24,15 @@ class CommerceClient :
             return response.json()
         except httpx.HTTPError:
             raise
+    
+    
+    async def cancel_order(self , order_id : int ) -> dict :
+        try:
+            response = await self.client.post(
+                f"{self.BaseUrl}/orders/{order_id}/cancel"
+            )
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPError:
+            raise
+    
