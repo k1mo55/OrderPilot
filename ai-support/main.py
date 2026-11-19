@@ -5,14 +5,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from dotenv import load_dotenv
-
 from services.commerce_client import CommerceClient
 from graph.nodes import SupportNodes
 from graph.workflow import SupportGraph
 from langgraph.types import Command
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 load_dotenv()
 
 base_url = os.environ["BASE_URL"]
+database_url = os.environ["DATABASE_URL"]
 class ApprovalRequest(BaseModel):
     thread_id: str
     approved: bool
@@ -24,11 +25,15 @@ class ChatRequest(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with httpx.AsyncClient() as client , AsyncOpenAI() as llm_client:
+    async with (httpx.AsyncClient() as client , AsyncOpenAI() as llm_client , 
+                AsyncPostgresSaver.from_conn_string(database_url) as checkpointer
+                ):
+        await checkpointer.setup()
+        
         commerce_client = CommerceClient(base_url, client)
         support_nodes = SupportNodes(commerce_client ,llm_client )
-        support_graph = SupportGraph(support_nodes)
-
+        support_graph = SupportGraph(support_nodes , checkpointer)
+        
         app.state.graph = support_graph.build_graph()
 
         yield

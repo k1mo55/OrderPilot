@@ -4,9 +4,9 @@ from langgraph.graph import START , END , StateGraph
 from langgraph.checkpoint.memory import MemorySaver
 
 class SupportGraph:
-    def __init__(self , nodes :SupportNodes ):
+    def __init__(self , nodes :SupportNodes , checkPointer):
         self.nodes = nodes
-    
+        self.checkpointer = checkPointer
     def build_graph(self):
         builder = StateGraph( SupportState )
         
@@ -47,7 +47,7 @@ class SupportGraph:
         )
         builder.add_edge("cancel_order" , END)
         
-        checkPointer = MemorySaver()
+        checkPointer = self.checkpointer
         graph = builder.compile(checkpointer=checkPointer)
         return graph
     
