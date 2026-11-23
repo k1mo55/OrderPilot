@@ -16,6 +16,7 @@ base_url = os.environ["BASE_URL"]
 database_url = os.environ["DATABASE_URL"]
 class ApprovalRequest(BaseModel):
     thread_id: str
+    interrupt_id: str
     approved: bool
 
 class ChatRequest(BaseModel):
@@ -76,7 +77,7 @@ async def approve(data: ApprovalRequest, request: Request):
     }
     }
     result = await request.app.state.graph.ainvoke(
-    Command(resume=data.approved),
-    config=config
+        Command(resume={data.interrupt_id: data.approved}),
+        config=config
     )
     return result

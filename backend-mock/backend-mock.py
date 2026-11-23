@@ -1,10 +1,17 @@
 """Disposable in-memory commerce backend for local LangGraph experiments."""
 
+import os
 from copy import deepcopy
 from enum import Enum
+from pathlib import Path
 
+import psycopg
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, ConfigDict
+
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 
 class OrderStatus(str, Enum):
@@ -42,6 +49,13 @@ class ResetResponse(BaseModel):
     orders_restored: int
 
 
+class CheckpointCleanupResponse(BaseModel):
+    message: str
+    checkpoints_deleted: int
+    writes_deleted: int
+    blobs_deleted: int
+
+
 ORIGINAL_CUSTOMERS = [
     {"id": 1, "name": "Alice Johnson"},
     {"id": 2, "name": "Bob Smith"},
@@ -54,6 +68,16 @@ ORIGINAL_ORDERS = [
     {"id": 103, "customer_id": 2, "status": "PROCESSING", "total_amount": 75.50},
     {"id": 104, "customer_id": 2, "status": "DELIVERED", "total_amount": 210.25},
     {"id": 105, "customer_id": 3, "status": "CANCELLED", "total_amount": 18.00},
+    {"id": 106, "customer_id": 1, "status": "PROCESSING", "total_amount": 34.75},
+    {"id": 107, "customer_id": 1, "status": "DELIVERED", "total_amount": 89.99},
+    {"id": 108, "customer_id": 1, "status": "CANCELLED", "total_amount": 15.50},
+    {"id": 109, "customer_id": 2, "status": "PENDING", "total_amount": 63.20},
+    {"id": 110, "customer_id": 2, "status": "SHIPPED", "total_amount": 145.00},
+    {"id": 111, "customer_id": 2, "status": "CANCELLED", "total_amount": 27.80},
+    {"id": 112, "customer_id": 3, "status": "PENDING", "total_amount": 52.45},
+    {"id": 113, "customer_id": 3, "status": "PROCESSING", "total_amount": 99.95},
+    {"id": 114, "customer_id": 3, "status": "SHIPPED", "total_amount": 175.30},
+    {"id": 115, "customer_id": 3, "status": "DELIVERED", "total_amount": 240.00},
 ]
 
 customers = deepcopy(ORIGINAL_CUSTOMERS)
@@ -129,4 +153,37 @@ def reset_data() -> ResetResponse:
         message="Mock data restored",
         customers_restored=len(customers),
         orders_restored=len(orders),
+    )
+
+
+@app.delete("/admin/checkpoints", response_model=CheckpointCleanupResponse)
+def delete_all_checkpoints() -> CheckpointCleanupResponse:
+    """Delete saved LangGraph runs while preserving checkpoint schema metadata."""
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="DATABASE_URL is not configured",
+        )
+
+    try:
+        with psycopg.connect(database_url) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("DELETE FROM checkpoint_writes")
+                writes_deleted = cursor.rowcount
+                cursor.execute("DELETE FROM checkpoint_blobs")
+                blobs_deleted = cursor.rowcount
+                cursor.execute("DELETE FROM checkpoints")
+                checkpoints_deleted = cursor.rowcount
+    except psycopg.Error as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Could not clear the checkpoint database",
+        ) from exc
+
+    return CheckpointCleanupResponse(
+        message="All LangGraph checkpoint data deleted",
+        checkpoints_deleted=checkpoints_deleted,
+        writes_deleted=writes_deleted,
+        blobs_deleted=blobs_deleted,
     )

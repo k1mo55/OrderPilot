@@ -17,7 +17,7 @@ python -m uvicorn backend-mock:app --reload
 
 Open the Swagger UI at <http://127.0.0.1:8000/docs>.
 
-The sample order IDs are `101` through `105`. For example:
+The sample order IDs are `101` through `115`. For example:
 
 ```powershell
 Invoke-RestMethod http://127.0.0.1:8000/customers/1/orders
@@ -25,3 +25,12 @@ Invoke-RestMethod http://127.0.0.1:8000/orders/101/cancellation-eligibility
 Invoke-RestMethod -Method Post http://127.0.0.1:8000/orders/101/cancel
 Invoke-RestMethod -Method Post http://127.0.0.1:8000/reset
 ```
+
+To delete all saved LangGraph checkpoint state while keeping the database schema:
+
+```powershell
+Invoke-RestMethod -Method Delete http://127.0.0.1:8000/admin/checkpoints
+```
+
+This development-only endpoint uses `DATABASE_URL` from the repository's root
+`.env` file. Do not expose the mock backend publicly.
