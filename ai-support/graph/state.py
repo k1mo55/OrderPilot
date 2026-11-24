@@ -19,11 +19,13 @@ class SupportState( TypedDict ):
     final_response: str | None
     
 class TaskState(TypedDict):
+    id:str
     customer_id : int 
     intent: str
     order_id : int  | None
     
 class CancellationState(TypedDict):
+    id:str
     customer_id : int 
     intent: str | None
     order_id : int

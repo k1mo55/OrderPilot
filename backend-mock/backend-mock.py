@@ -2,6 +2,7 @@
 
 import os
 from copy import deepcopy
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 
@@ -36,6 +37,7 @@ class Order(BaseModel):
     customer_id: int
     status: OrderStatus
     total_amount: float
+    created_at: datetime
 
 
 class CancellationEligibility(BaseModel):
@@ -63,21 +65,21 @@ ORIGINAL_CUSTOMERS = [
 ]
 
 ORIGINAL_ORDERS = [
-    {"id": 101, "customer_id": 1, "status": "PENDING", "total_amount": 49.99},
-    {"id": 102, "customer_id": 1, "status": "SHIPPED", "total_amount": 120.00},
-    {"id": 103, "customer_id": 2, "status": "PROCESSING", "total_amount": 75.50},
-    {"id": 104, "customer_id": 2, "status": "DELIVERED", "total_amount": 210.25},
-    {"id": 105, "customer_id": 3, "status": "CANCELLED", "total_amount": 18.00},
-    {"id": 106, "customer_id": 1, "status": "PROCESSING", "total_amount": 34.75},
-    {"id": 107, "customer_id": 1, "status": "DELIVERED", "total_amount": 89.99},
-    {"id": 108, "customer_id": 1, "status": "CANCELLED", "total_amount": 15.50},
-    {"id": 109, "customer_id": 2, "status": "PENDING", "total_amount": 63.20},
-    {"id": 110, "customer_id": 2, "status": "SHIPPED", "total_amount": 145.00},
-    {"id": 111, "customer_id": 2, "status": "CANCELLED", "total_amount": 27.80},
-    {"id": 112, "customer_id": 3, "status": "PENDING", "total_amount": 52.45},
-    {"id": 113, "customer_id": 3, "status": "PROCESSING", "total_amount": 99.95},
-    {"id": 114, "customer_id": 3, "status": "SHIPPED", "total_amount": 175.30},
-    {"id": 115, "customer_id": 3, "status": "DELIVERED", "total_amount": 240.00},
+    {"id": 101, "customer_id": 1, "status": "PENDING", "total_amount": 49.99, "created_at": "2026-11-22T09:15:00Z"},
+    {"id": 102, "customer_id": 1, "status": "SHIPPED", "total_amount": 120.00, "created_at": "2026-11-18T14:30:00Z"},
+    {"id": 103, "customer_id": 2, "status": "PROCESSING", "total_amount": 75.50, "created_at": "2026-11-21T11:45:00Z"},
+    {"id": 104, "customer_id": 2, "status": "DELIVERED", "total_amount": 210.25, "created_at": "2026-11-10T16:20:00Z"},
+    {"id": 105, "customer_id": 3, "status": "CANCELLED", "total_amount": 18.00, "created_at": "2026-11-08T08:05:00Z"},
+    {"id": 106, "customer_id": 1, "status": "PROCESSING", "total_amount": 34.75, "created_at": "2026-11-23T10:10:00Z"},
+    {"id": 107, "customer_id": 1, "status": "DELIVERED", "total_amount": 89.99, "created_at": "2026-10-29T13:40:00Z"},
+    {"id": 108, "customer_id": 1, "status": "CANCELLED", "total_amount": 15.50, "created_at": "2026-10-24T17:25:00Z"},
+    {"id": 109, "customer_id": 2, "status": "PENDING", "total_amount": 63.20, "created_at": "2026-11-24T07:50:00Z"},
+    {"id": 110, "customer_id": 2, "status": "SHIPPED", "total_amount": 145.00, "created_at": "2026-11-17T12:35:00Z"},
+    {"id": 111, "customer_id": 2, "status": "CANCELLED", "total_amount": 27.80, "created_at": "2026-10-31T15:55:00Z"},
+    {"id": 112, "customer_id": 3, "status": "PENDING", "total_amount": 52.45, "created_at": "2026-11-23T18:05:00Z"},
+    {"id": 113, "customer_id": 3, "status": "PROCESSING", "total_amount": 99.95, "created_at": "2026-11-20T09:40:00Z"},
+    {"id": 114, "customer_id": 3, "status": "SHIPPED", "total_amount": 175.30, "created_at": "2026-11-15T11:15:00Z"},
+    {"id": 115, "customer_id": 3, "status": "DELIVERED", "total_amount": 240.00, "created_at": "2026-10-20T14:45:00Z"},
 ]
 
 customers = deepcopy(ORIGINAL_CUSTOMERS)
